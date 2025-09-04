@@ -1,0 +1,2 @@
+# EtherCAT_STM32H7
+Implement SOEM in STM32H743VIT6
