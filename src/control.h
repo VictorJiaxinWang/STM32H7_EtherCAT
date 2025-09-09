@@ -15,21 +15,43 @@
 #define TOTALNUMLENGTH 32
 
 
+// PACKED_BEGIN
+// typedef struct PACKED
+// {
+// 	uint16 controlword; //6040
+// 	int32 targetPostion; //607A
+// }PDO_Outputs; 
+// PACKED_END
+
+// PACKED_BEGIN
+// typedef struct PACKED
+// {
+// 	uint16 statusWord;  //6041
+// 	int32 returnPostion;   //6064
+// }PDO_Input; 
+// PACKED_END
+
+// PV
 PACKED_BEGIN
 typedef struct PACKED
 {
-	uint16 controlword; //6040
+	uint16 controlword; // 0x6040
 	int32 targetPostion; //607A
+	int32 targetSpeed; // 0x60FF
+	int32 acc; // 0x6083
+	int32 dec; // 0x6084
 }PDO_Outputs; 
 PACKED_END
 
 PACKED_BEGIN
 typedef struct PACKED
 {
-	uint16 statusWord;  //6041
+	uint16 statusWord;  // 0x6041
 	int32 returnPostion;   //6064
+	int32 returnSpeed;   // 0x606C
 }PDO_Input; 
 PACKED_END
+
 
 PACKED_BEGIN
 typedef struct PACKED
@@ -88,6 +110,7 @@ extern int MOTORNUM;
 extern int32_t basePos[TOTALNUMLENGTH];
 extern int32_t vel[TOTALNUMLENGTH];
 extern int32_t delatPos;
+extern int32_t targetSpeed;
 
 
 void UniverseVarInit(void);

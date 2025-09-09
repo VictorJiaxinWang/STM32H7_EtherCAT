@@ -8,11 +8,16 @@
 #include "ethercat.h"
 #include "control.h"
 #include "ethercatmain.h"
+#include <stdlib.h>
+
 
 
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 static void MPU_Config(void);
+
+uint8_t uart1_rx_data = 0;     
+volatile int32_t uart1_value = 0; 
 
 int main(void)
 {
@@ -23,6 +28,12 @@ int main(void)
 	UniverseVarInit();
 	MX_GPIO_Init();
 	MX_USART1_UART_Init();
+
+  if (HAL_UART_Receive_IT(&huart1, &uart1_rx_data, 1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
 	MX_ETH_Init();
 	MX_TIM1_Init();
 	MX_TIM2_Init();
@@ -59,22 +70,48 @@ int main(void)
 	
 	while (1)
 	{
-		delatPos = 10;//这里修改电机使能后每个周期运行的脉冲数	
-#if ISOBSERVETXPDO == 1
-		//打印伺服信息
-		for(int index = 0;index < MOTORNUM;index++)
-		{
-			printf("the %d servo current position is %d\r\n", index + 1, Input_Servo[index]->returnPostion);
-	
-		}
-		printf("\r\n");
-		printf("------------------------------------------------\r\n");
+    targetSpeed = uart1_value;
+		printf("The input value is: %d\r\n", targetSpeed);
 		HAL_Delay(1000);
-#endif	
-
+		
+// 		delatPos = 100;//这里修改电机使能后每个周期运行的脉冲数	
+// #if ISOBSERVETXPDO == 1
+// 		//打印伺服信息
+// 		for(int index = 0;index < MOTORNUM;index++)
+// 		{
+// 			// printf("the %d servo current position is %d\r\n", index + 1, Input_Servo[index]->returnPostion);
+	
+// 		}
+// 		printf("\r\n");
+// 		printf("------------------------------------------------\r\n");
+// 		HAL_Delay(1000);
+// #endif	
+		
 	}		
 
 	      
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    static char rx_buffer[16];
+    static uint8_t rx_index = 0;
+
+    if (huart->Instance == USART1)
+    {
+        if (uart1_rx_data != '\n' && rx_index < sizeof(rx_buffer) - 1)
+        {
+            rx_buffer[rx_index++] = uart1_rx_data;
+        }
+        else
+        {
+            rx_buffer[rx_index] = '\0'; 
+            uart1_value = atoi(rx_buffer); 
+            rx_index = 0;
+        }
+
+        HAL_UART_Receive_IT(&huart1, &uart1_rx_data, 1);
+    }
 }
 
 

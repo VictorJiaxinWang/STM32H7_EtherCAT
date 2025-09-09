@@ -51,7 +51,9 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-
+  // 关键：配置NVIC（嵌套向量中断控制器）
+  HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);  // 设置中断优先级
+  HAL_NVIC_EnableIRQ(USART1_IRQn);          // 使能USART1中断
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -123,6 +125,12 @@ int fgetc(FILE * f)
   HAL_UART_Receive(&huart1,&ch, 1, 0xffff);
   return ch;
 }
+
+void USART1_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart1);
+}
+
 /* USER CODE END 1 */
 
 

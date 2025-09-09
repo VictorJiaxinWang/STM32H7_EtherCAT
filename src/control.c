@@ -25,6 +25,7 @@ int expectedWKC;
 int32_t basePos[TOTALNUMLENGTH];  //基位置
 int32_t vel[TOTALNUMLENGTH];      //步进和
 int32_t delatPos;                 //每周期步进值
+int32_t targetSpeed = 0;
 uint32_t value = 0xAA55;
 
 //各边变量参数初始化
@@ -67,8 +68,8 @@ int CIA402AxleStart(int slave_index)
 {
 	int ret = 0;
 	int ss;
-	basePos[slave_index] = Input_Servo[slave_index]->returnPostion;
-	Output_Servo[slave_index]->targetPostion = basePos[slave_index];
+	// basePos[slave_index] = Input_Servo[slave_index]->returnPostion;
+	// Output_Servo[slave_index]->targetPostion = basePos[slave_index];
 	uint16 s = Input_Servo[slave_index]->statusWord;
 	ss = GetAxleState(s);
 	if (s & 0x8) 
@@ -167,40 +168,82 @@ int IsSlavesSynced(int SlaveCount)
 	return ret;
 }
 
-//驱动器CSP配置
+// //驱动器CSP配置
+// int ServoUniversalConfig(uint16 slave_index)
+// {
+// 	int rxpdo_mapIndex = 1;
+// 	int txpdo_mapIndex = 1;
+// 	rxpdo_mapIndex = 1;
+// 	txpdo_mapIndex = 1;
+// //********************0x1C12配置*****************************************
+// 	// 清空RxPDO映射
+// 	wSdo8(slave_index, 0x1C12, 00, 0);	 		  
+// 	wSdo8(slave_index, 0x1600, 00, 0);	 		  
+
+// 	// 配置RxPDO映射
+// 	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x60400010);	// 控制字	
+// 	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x607A0020);	// 目标位置	
+// 	wSdo8(slave_index, 0x1600, 00, rxpdo_mapIndex - 1);			// 映射数量
+// 	wSdo16(slave_index, 0x1C12, 01, 0x1600);					// 映射表
+// 	wSdo8(slave_index, 0x1C12, 00, 1);       					// 映射数量
+	
+// //********************0x1C13配置*****************************************
+// 	// 清空TxPDO映射		
+// 	wSdo8(slave_index, 0x1C13, 00, 00);				  			
+// 	wSdo8(slave_index, 0x1A00, 00, 00);		
+	
+// 	// 配置TxPDO映射
+// 	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x60410010);	// 状态字
+// 	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x60640020);	// 实际位置	
+// 	wSdo8(slave_index, 0x1A00, 00, txpdo_mapIndex - 1);			// 映射数量	  
+// 	wSdo16(slave_index, 0x1C13, 01, 0x1A00);					// 映射表
+// 	wSdo8(slave_index, 0x1C13, 00, 1);                			// 映射数量
+
+// 	// 设置工作模式为CSP
+// 	wSdo8(slave_index, 0x6060, 00, op_mode_csp);   
+	
+// 	return 0;
+// }
+
+// 驱动器PV配置
 int ServoUniversalConfig(uint16 slave_index)
 {
 	int rxpdo_mapIndex = 1;
 	int txpdo_mapIndex = 1;
-	rxpdo_mapIndex = 1;
-	txpdo_mapIndex = 1;
-//********************0x1C12配置*****************************************	
+
+//********************0x1C12配置*****************************************
+	// 清空RxPDO映射
 	wSdo8(slave_index, 0x1C12, 00, 0);	 		  
 	wSdo8(slave_index, 0x1600, 00, 0);	 		  
 
-	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x60400010);		
-	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x607A0020);		
-	wSdo8(slave_index, 0x1600, 00, rxpdo_mapIndex - 1);		
-
-	wSdo16(slave_index, 0x1C12, 01, 0x1600);
-	wSdo8(slave_index, 0x1C12, 00, 1);       
+	// 配置RxPDO映射
+	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x60400010);	// 控制字	
+	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x607A0020);	// 目标位置	
+	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x60FF0020);	// 轮廓速度
+	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x60830020);	// 加速度
+	wSdo32(slave_index, 0x1600, rxpdo_mapIndex++, 0x60840020);	// 减速度
+	wSdo8(slave_index, 0x1600, 00, rxpdo_mapIndex - 1);			// 映射数量
+	wSdo16(slave_index, 0x1C12, 01, 0x1600);					// 映射表
+	wSdo8(slave_index, 0x1C12, 00, 1);       					// 映射数量
 	
-//********************0x1C13配置*****************************************		
+//********************0x1C13配置*****************************************
+	// 清空TxPDO映射		
 	wSdo8(slave_index, 0x1C13, 00, 00);				  			
 	wSdo8(slave_index, 0x1A00, 00, 00);		
-
-	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x60410010);		
-	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x60640020);		
-
-	wSdo8(slave_index, 0x1A00, 00, txpdo_mapIndex - 1);				  
-	wSdo16(slave_index, 0x1C13, 01, 0x1A00);			
-	wSdo8(slave_index, 0x1C13, 00, 1);                
-
-	wSdo8(slave_index, 0x6060, 00, op_mode_csp);   
 	
-	return 0;
-}
+	// 配置TxPDO映射
+	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x60410010);	// 状态字
+	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x60640020);	// 实际位置	
+	wSdo32(slave_index, 0x1A00, txpdo_mapIndex++, 0x606C0020);	// 实际速度	
+	wSdo8(slave_index, 0x1A00, 00, txpdo_mapIndex - 1);			// 映射数量	  
+	wSdo16(slave_index, 0x1C13, 01, 0x1A00);					// 映射表
+	wSdo8(slave_index, 0x1C13, 00, 1);                			// 映射数量
 
+	// 设置工作模式为CSP
+	wSdo8(slave_index, 0x6060, 00, op_mode_pv); 
+	
+	return 1;
+}
 
 int EcatInit(void)
 {
@@ -355,6 +398,7 @@ int EcatInit(void)
     
 }
 
+
 //EtherCAT周期任务
 void EcatCycleTask(void)
 {
@@ -366,13 +410,22 @@ void EcatCycleTask(void)
 		{
 			for(int i = 0; i < MOTORNUM; i++)
 			{
-				vel[i] += delatPos;
+				Output_Servo[i] -> targetSpeed = targetSpeed;
+				Output_Servo[i] -> acc = 100000;
+				Output_Servo[i] -> dec = 100000;
+				Output_Servo[i] -> controlword = 0x0F; 
+				// printf("%d Slave ControlWord 0x%04x StatusWord 0x%04x Speed %d\r\n",i, Output_Servo[i]->controlword, Input_Servo[i]->statusWord, Input_Servo[i]->returnSpeed);
 			}
-			for(int j = 0; j < MOTORNUM; j++)
-			{
-				Output_Servo[j]->controlword = 0xF;
-				Output_Servo[j]->targetPostion = basePos[j] + vel[j];		
-			}
+			
+			// for(int i = 0; i < MOTORNUM; i++)
+			// {
+			// 	vel[i] += delatPos;
+			// }
+			// for(int j = 0; j < MOTORNUM; j++)
+			// {
+			// 	Output_Servo[j]->controlword = 0x0F;
+			// // 	Output_Servo[j]->targetPostion = basePos[j] + vel[j];		
+			// }
 #if(IONUM > 0)
 			//value = ~value;
 			Output_IO[0]->Output = 0xAA55;	

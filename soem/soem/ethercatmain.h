@@ -139,7 +139,7 @@ typedef struct
    /** input bytes, if Ibits < 8 then Ibytes = 0 */
    uint32           Ibytes;     //输入字节数
    /** input pointer in IOmap buffer */
-   uint8            *inputs;     //输如数据指针
+   uint8            *inputs;     //输入数据指针
    /** startbit in first input byte */
    uint8            Istartbit;    //输入数据开始的那个bit
    /** SM structure */
