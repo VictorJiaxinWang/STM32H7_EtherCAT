@@ -14,41 +14,47 @@
 #define ISOBSERVETXPDO  1   //是否打印从站TxPDO信息
 #define TOTALNUMLENGTH 32
 
-
-// PACKED_BEGIN
-// typedef struct PACKED
-// {
-// 	uint16 controlword; //6040
-// 	int32 targetPostion; //607A
-// }PDO_Outputs; 
-// PACKED_END
-
-// PACKED_BEGIN
-// typedef struct PACKED
-// {
-// 	uint16 statusWord;  //6041
-// 	int32 returnPostion;   //6064
-// }PDO_Input; 
-// PACKED_END
-
-// PV
 PACKED_BEGIN
 typedef struct PACKED
 {
-	uint16 controlword; // 0x6040
-	int32 targetPostion; //607A
-	int32 targetSpeed; // 0x60FF
+	// Common Part
+	uint16 controlword; 	// 0x6040
+	uint8 modeOfOperation;  // 0x6060
+
+	// CSP Mode and PP Mode
+	uint32 targetPostion; //607A
+
+	// PP Mode
+	int32 maxSpeedPP; // 0x6081
 	int32 acc; // 0x6083
+
+	// PP Mode + PV Mode
 	int32 dec; // 0x6084
+	// uint32 quickStopDec; // 0x6085
+
+	// PV Mode
+	int32 targetSpeed; // 0x60FF
+
+	// Home Mode
+	int8 homingMethod; // 0x6098
+	int32 homingSpeed; // 0x6099
+	int32 homingAccDec;  // 0x609A
+	int32 homingOffset; // 0x607C
 }PDO_Outputs; 
 PACKED_END
 
 PACKED_BEGIN
 typedef struct PACKED
 {
+	// Common Part
 	uint16 statusWord;  // 0x6041
-	int32 returnPostion;   //6064
-	int32 returnSpeed;   // 0x606C
+	uint8 modeOfOperationDisplay; // 0x6061
+
+	// CSP Mode and PP Mode
+	int32 actualPostion;   //6064
+
+	// PV Mode
+	int32 actualSpeed;   // 0x606C
 }PDO_Input; 
 PACKED_END
 
@@ -57,16 +63,13 @@ PACKED_BEGIN
 typedef struct PACKED
 {
 	uint16 Input; //16位数字输入
-	
 }IO_PDO_Input;
 PACKED_END
 
 PACKED_BEGIN
 typedef struct PACKED
 {
-	
 	uint16 Output;  //16位数字输出
-
 }IO_PDO_Output;
 PACKED_END
 

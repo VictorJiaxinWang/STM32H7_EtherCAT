@@ -10,8 +10,6 @@
 #include "ethercatmain.h"
 #include <stdlib.h>
 
-
-
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 static void MPU_Config(void);
@@ -21,75 +19,57 @@ volatile int32_t uart1_value = 0;
 
 int main(void)
 {
-	MPU_Config();
-	CPU_CACHE_Enable();
-	HAL_Init();
-	SystemClock_Config();
-	UniverseVarInit();
-	MX_GPIO_Init();
-	MX_USART1_UART_Init();
-
+  MPU_Config();
+  CPU_CACHE_Enable();
+  HAL_Init();
+  SystemClock_Config();
+  UniverseVarInit();
+  MX_GPIO_Init();
+  MX_USART1_UART_Init();
   if (HAL_UART_Receive_IT(&huart1, &uart1_rx_data, 1) != HAL_OK)
   {
     Error_Handler();
   }
+  MX_ETH_Init();
+  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  PHY_Init();	
+  __enable_irq();
+  HAL_TIM_Base_Start_IT(&htim1);
+  HAL_Delay(2000);
 
-	MX_ETH_Init();
-	MX_TIM1_Init();
-	MX_TIM2_Init();
-	MX_TIM3_Init();
-	PHY_Init();	
-	__enable_irq();
-	HAL_TIM_Base_Start_IT(&htim1);
-	HAL_Delay(2000);
-	
-	int ret = -1;
+  int ret = -1;
 
-	ret = EcatInit();
-	if(ret < 0)
-	{
-		printf("ECAT Init Failed! ret = %d\r\n", ret);
-		while(1);
-	}
-	else
-	{
-		printf("ECAT Init Successfully!\r\n");
-	}
-	
-	ret = AxleStartAndServoOn();
-	if(ret < 0)
-	{
-		printf("Servo On Failed! ret = %d\r\n", ret);
-		while(1);
-	}
-	else
-	{
-		printf("Servo On Successfully!\r\n");
-		printf("Axis is running\r\n");
-	}	
-	
-	while (1)
-	{
+  ret = EcatInit();
+  if(ret < 0)
+  {
+    printf("ECAT Init Failed! ret = %d\r\n", ret);
+    while(1);
+  }
+  else
+  {
+    printf("ECAT Init Successfully!\r\n");
+  }
+
+  ret = AxleStartAndServoOn();
+  if(ret < 0)
+  {
+    printf("Servo On Failed! ret = %d\r\n", ret);
+    while(1);
+  }
+  else
+  {
+    printf("Servo On Successfully!\r\n");
+    printf("Axis is running\r\n");
+  }	
+
+  while (1)
+  {
     targetSpeed = uart1_value;
-		printf("The input value is: %d\r\n", targetSpeed);
-		HAL_Delay(1000);
-		
-// 		delatPos = 100;//这里修改电机使能后每个周期运行的脉冲数	
-// #if ISOBSERVETXPDO == 1
-// 		//打印伺服信息
-// 		for(int index = 0;index < MOTORNUM;index++)
-// 		{
-// 			// printf("the %d servo current position is %d\r\n", index + 1, Input_Servo[index]->returnPostion);
-	
-// 		}
-// 		printf("\r\n");
-// 		printf("------------------------------------------------\r\n");
-// 		HAL_Delay(1000);
-// #endif	
-		
-	}		
-
-	      
+    printf("The input value is: %d\r\n", targetSpeed);
+    HAL_Delay(1000);
+  }		
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
