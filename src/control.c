@@ -26,6 +26,8 @@ int32_t basePos[TOTALNUMLENGTH];  //基位置
 int32_t vel[TOTALNUMLENGTH];      //步进和
 int32_t delatPos;                 //每周期步进值
 int32_t targetSpeed = 0;
+uint32_t targetPos = 0;
+uint8_t motorIndex = 0;
 uint32_t value = 0xAA55;
 
 //各边变量参数初始化
@@ -402,13 +404,25 @@ void EcatCycleTask(void)
 		{
 			for(int i = 0; i < MOTORNUM; i++)
 			{
-				Output_Servo[i] -> targetSpeed = targetSpeed;
 				Output_Servo[i] -> acc = 10000;
 				Output_Servo[i] -> dec = 10000;
 				Output_Servo[i] -> controlword = 0x0F;
 				Output_Servo[i] -> modeOfOperation = op_mode_pv; 
 			}
 			
+			if(motorIndex == 0)
+			{
+				Output_Servo[0] -> targetSpeed = targetSpeed;
+			}
+			else if(motorIndex == 1)
+			{
+				Output_Servo[1] -> targetSpeed = targetSpeed;
+			}
+			else
+			{
+				printf("The motor index is out of range\n");
+			}
+
 #if(IONUM > 0)
 			//value = ~value;
 			Output_IO[0]->Output = 0xAA55;	

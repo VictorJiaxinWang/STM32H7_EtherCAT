@@ -14,8 +14,7 @@ static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 static void MPU_Config(void);
 
-uint8_t uart1_rx_data = 0;     
-volatile int32_t uart1_value = 0; 
+uint8_t uart1_rx_data = 0;
 
 int main(void)
 {
@@ -66,8 +65,7 @@ int main(void)
 
   while (1)
   {
-    targetSpeed = uart1_value;
-    printf("The input value is: %d\r\n", targetSpeed);
+    printf("The selected motor is #: %d, the target speed is: %d\r\n", motorIndex, targetSpeed);
     HAL_Delay(1000);
   }		
 }
@@ -86,7 +84,24 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         else
         {
             rx_buffer[rx_index] = '\0'; 
-            uart1_value = atoi(rx_buffer); 
+
+            for(int i = 0; i < rx_index; i++)
+            {
+                if(rx_buffer[i] == ' ')
+                {
+                    rx_buffer[i] = '\0';
+                    motorIndex = atoi(rx_buffer);
+                    if(motorIndex >= MOTORNUM)
+                    {
+                        motorIndex = 0;
+                    }
+                    memmove(rx_buffer, &rx_buffer[i + 1], rx_index - i);
+                    rx_index -= (i + 1);
+                    break;
+                }
+            }
+
+            targetSpeed = atoi(rx_buffer); 
             rx_index = 0;
         }
 

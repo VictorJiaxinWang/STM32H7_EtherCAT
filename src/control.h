@@ -22,7 +22,7 @@ typedef struct PACKED
 	uint8 modeOfOperation;  // 0x6060
 
 	// CSP Mode and PP Mode
-	uint32 targetPostion; //607A
+	uint32 targetPosition; //607A
 
 	// PP Mode
 	int32 maxSpeedPP; // 0x6081
@@ -51,7 +51,7 @@ typedef struct PACKED
 	uint8 modeOfOperationDisplay; // 0x6061
 
 	// CSP Mode and PP Mode
-	int32 actualPostion;   //6064
+	int32 actualPosition;   //6064
 
 	// PV Mode
 	int32 actualSpeed;   // 0x606C
@@ -114,6 +114,8 @@ extern int32_t basePos[TOTALNUMLENGTH];
 extern int32_t vel[TOTALNUMLENGTH];
 extern int32_t delatPos;
 extern int32_t targetSpeed;
+extern uint32_t targetPos;
+extern uint8_t motorIndex;
 
 
 void UniverseVarInit(void);
